@@ -1,0 +1,70 @@
+<!--
+<route id="saga99" >
+  <from uri="direct://saga99"/>
+  <log message="Processing ${body}"/>
+  <to uri="bean://serviceProcessor?method=compensationService1"/>
+</route>
+-->
+
+<routes xmlns="http://camel.apache.org/schema/spring">
+  <route id="saga99" >
+    <from uri="direct://saga99"/>
+    <log message="Processing ${body}"/>
+    <to uri="bean://serviceProcessor?method=compensationService1"/>
+  </route>
+  <route id="test" autoStartup="true">
+    <from uri="timer://trigger"/>
+    <transform>
+      <constant>"true"</constant>
+    </transform>
+    <to uri="log:out"/>
+  </route>
+</routes>
+
+<!--
+<camelContext id="TestCamelSaga" xmlns="http://camel.apache.org/schema/spring">
+  <routeConfiguration id="xmlInterceptor">
+    <interceptFrom uri="*">
+      <log message="Message intercepted from ${header.CamelInterceptedEndpoint}" id="inXmlInterceptor"/>
+    </interceptFrom>
+  </routeConfiguration>
+
+  <routeConfiguration id="xmlError">
+    <onException>
+      <exception>java.lang.Exception</exception>
+      <handled><constant>true</constant></handled>
+      <log message="XML WARN: ${exception.message}"/>
+    </onException>
+  </routeConfiguration>
+</camelContext>
+-->
+
+<!--  <throwException exceptionType="java.lang.Exception" message="Some kind of XML error"/>-->
+<!--
+<rest path="/saga/api">
+
+  <post uri="/do-service3" type="tw.com.firstbank.vo.Service2ReqVo" outType="tw.com.firstbank.vo.Service2RepVo">
+    <route>
+
+      <to uri="bean:service2Processor?method=doService2"/>
+
+    </route>
+  </post>
+</rest>
+-->
+<!--
+<route id="saga2">
+  <from uri="netty-http:http://localhost:9090/saga/api/do-service2"/>
+  <log message="Start saga2"/>
+
+  <saga>
+    <compensation uri="direct:compensation" />
+    <completion uri="direct:completion" />
+    <option optionName="myOptionKey">
+      <constant>myOptionValue</constant>
+    </option>
+  </saga>
+  <to uri="direct:action1" />
+  <to uri="direct:action2" />
+</route>
+-->

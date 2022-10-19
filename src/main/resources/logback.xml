@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<include resource="org/springframework/boot/logging/logback/base.xml" />
+	
+	<springProperty scope="context" name="springAppName" source="spring.application.name" />
+    <springProperty scope="context" name="env" source="spring.profiles.active" defaultValue="dev"/>
+
+    <property name="CHARSET" value="UTF-8" />
+    <property name="PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{35}@%method:%line - %msg %n" />
+    
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="JSONOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <fieldName>timestamp</fieldName>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <loggerName>
+                    <fieldName>logger</fieldName>
+                </loggerName>
+                <logLevel>
+                    <fieldName>level</fieldName>
+                </logLevel>
+                <threadName>
+                    <fieldName>thread</fieldName>
+                </threadName>
+                <nestedField>
+                    <fieldName>mdc</fieldName>
+                    <providers>
+                        <mdc />
+                    </providers>
+                </nestedField>
+                <stackTrace>
+                    <fieldName>stackTrace</fieldName>
+                    <!-- maxLength - limit the length of the stack trace -->
+                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                        <maxDepthPerThrowable>200</maxDepthPerThrowable>
+                        <maxLength>14000</maxLength>
+                        <rootCauseFirst>true</rootCauseFirst>
+                    </throwableConverter>
+                </stackTrace>
+                <message />
+                <throwableClassName>
+                    <fieldName>exceptionClass</fieldName>
+                </throwableClassName>
+            </providers>
+        </encoder>
+    </appender>
+
+	<!-- 每日切換日誌文件 -->
+    <appender name="DRF" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>logs/app.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+          	<!--日誌文件輸出的文件名-->
+          	<FileNamePattern>logs/app.%d{yyyy-MM-dd}.log</FileNamePattern>
+          	<!--日誌文件保留天數-->
+          	<maxHistory>7</maxHistory>               	      
+        </rollingPolicy>
+        <encoder>
+          	<Pattern>${PATTERN}</Pattern>
+          	<charset>${CHARSET}</charset>
+        </encoder>   
+        
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+          	<MaxFileSize>100MB</MaxFileSize>
+        </triggeringPolicy>           
+    </appender>
+
+	<root level="INFO">
+		<appender-ref ref="CONSOLE" />
+	</root>
+	
+	
+	<logger name="tw.com.firstbank" level="DEBUG" additivity="false">
+		<appender-ref ref="DRF" />
+		<appender-ref ref="JSONOUT" />  
+	</logger>
+	
+	
+	<springProfile name="dev">
+        <root level="DEBUG">
+			<appender-ref ref="STDOUT" />
+		</root>
+    </springProfile>
+    
+    <springProfile name="prod">
+        <root level="ERROR">
+			<appender-ref ref="STDOUT" />
+		</root>
+    </springProfile>        
+	
+</configuration>

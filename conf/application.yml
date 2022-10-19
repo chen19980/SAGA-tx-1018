@@ -1,0 +1,196 @@
+server:
+  address: 0.0.0.0
+  port: 7070
+  servlet:
+    contextPath: /
+
+  error:
+    whitelabel:
+      enabled: false
+
+  compression:
+    enabled: true
+    min-response-size: 256
+    mime-types: text/html,text/xml,text/plain,application/json,application/xml,text/css,application/javascript,image/svg+xml
+
+  shutdown: graceful
+
+spring:
+
+  devtools:
+    restart:
+      enabled: true
+      exclude: static/**,public/**
+    livereload:
+      enabled: true
+
+  application:
+    name: camel-saga
+
+  lifecycle:
+    timeout-per-shutdown-phase: 1m
+
+  ## enabling overriding by setting spring.main.allow-bean-definition-overriding=true
+  main:
+    allow-bean-definition-overriding: true
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      write-date-timestamps-as-nanoseconds: false
+      fail-on-empty-beans: false
+## json convert     
+#    date-format: "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+#    time-zone: GMT+0
+#    time-zone: "UTC"
+
+# multipart upload folder
+  http:
+    multipart:
+      location: ./upload
+    encoding:
+      charset: UTF-8
+      force: true
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant-path-matcher
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp    
+
+  servlet:
+    multipart:
+      max-file-size: 31MB
+      max-request-size: 31MB
+
+  batch:
+    table-prefix: batch_
+    job:
+      enabled: false
+    # always, never
+    initialize-schema: never  
+    initializer:
+      enabled: false
+
+##
+#  jpa:
+#    hibernate:
+#      ddl-auto: none
+#  h2:
+#    console:
+#      enabled: true
+#      path: /h2
+#  datasource:
+#    url: jdbc:h2:mem:test
+#    username: sa
+#    password:
+#    driver-class-name: org.h2.Driver
+
+#  jpa:
+#    properties:
+#      hibernate:
+#        # dialect: org.hibernate.dialect.Oracle12cDialect
+#        dialect: org.hibernate.dialect.Oracle10gDialect
+#        show_sql: true
+#        format_sql: false
+#        ## none, validate, update, create, create-drop
+#        ddl-auto: none
+#        proc:
+#          param_null_passing: true
+
+  jpa:
+    database-platform: org.hibernate.dialect.Oracle12cDialect
+  datasource:
+    url: jdbc:oracle:thin:@//192.168.61.202:1521/DEVDB
+    username: fx
+    password: fx_password
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    hikari.maximum-pool-size: 50
+    hikari.connection-timeout: 0
+
+
+security:
+  basic:
+    enabled: false
+
+# Force enable health probes. Would be enabled on kubernetes platform by default
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+    health:
+      show-details: always
+  health:
+    probes:
+      enabled: true
+
+logging:
+  file: camel-saga.log
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"
+  # logging.level.<packageName>.<className> = DEBUG
+  level:
+    tw.com.firstbank: DEBUG
+#    org.hibernate.SQL: DEBUG
+#    org.springframework: DEBUG
+#    org.springframework.http.client: DEBUG
+#    org.springframework.web.client.RestTemplate: DEBUG
+
+
+# to keep the JVM running
+camel:
+  springboot:
+    name: TestCamelSaga
+    startup-summary-level: verbose
+    #dump-routes: true
+
+    route-controller-supervise-enabled: true
+    route-controller-back-off-max-attempts: 3
+
+    jmx-enabled: false
+
+    # classpath:com/foo/routes/*.xml
+    #xmlRoutes: false
+    #xmlRoutes: classpath:camel/*.xml
+    # comma separated
+    #routes-include-pattern: classpath:camel/*.xml
+
+    # rest dsl
+    # classpath:com/foo/rests/*.xml
+    xmlRests: false
+    main-run-controller: true
+    use-mdc-logging: true
+    # trace
+    tracing: true
+    tracing-standby: true
+    tracing-logging-format: "%-4.4s [%-30.30s] [%-50.50s]"
+  health:
+    enabled: true
+    # full, default, or oneline
+    exposure-level: default
+  component:
+    spring-rabbitmq.auto-declare: false
+  #service:
+    #lra:
+    #  enabled: true
+    #  coordinator-url: http://lra-service-host
+    #  local-participant-url: http://my-host-as-seen-by-lra-service:8080/context-path
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 10000
+        readTimeout: 10000
+        # NONE, BASIC, HEADERS, FULL
+        loggerLevel: FULL
+    # feign.client.config.foo-client.loggerLevel = full
+
+# for: spring cloud 2020 LoadBalancerFeignClient class not found
+opentracing:
+  spring:
+    cloud:
+      feign:
+        enabled: false
